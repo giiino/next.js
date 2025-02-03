@@ -10,8 +10,8 @@ use napi::{
 };
 use serde::Serialize;
 use turbo_tasks::{
-    get_effects, trace::TraceRawVcs, Effects, OperationVc, ReadRef, TaskId, TryJoinIterExt,
-    TurboTasks, UpdateInfo, Vc, VcValueType,
+    get_effects, task_statistics::TaskStatisticsApi, trace::TraceRawVcs, Effects, OperationVc,
+    ReadRef, TaskId, TryJoinIterExt, TurboTasks, TurboTasksApi, UpdateInfo, Vc, VcValueType,
 };
 use turbo_tasks_backend::{
     default_backing_storage, noop_backing_storage, DefaultBackingStorage, NoopBackingStorage,
@@ -111,17 +111,17 @@ impl NextTurboTasks {
         }
     }
 
-    pub fn memory_backend(&self) -> Option<&turbo_tasks_memory::MemoryBackend> {
-        match self {
-            NextTurboTasks::Memory(_) => None,
-            NextTurboTasks::PersistentCaching(_) => None,
-        }
-    }
-
     pub async fn stop_and_wait(&self) {
         match self {
             NextTurboTasks::Memory(turbo_tasks) => turbo_tasks.stop_and_wait().await,
             NextTurboTasks::PersistentCaching(turbo_tasks) => turbo_tasks.stop_and_wait().await,
+        }
+    }
+
+    pub fn task_statistics(&self) -> &TaskStatisticsApi {
+        match self {
+            NextTurboTasks::Memory(turbo_tasks) => turbo_tasks.task_statistics(),
+            NextTurboTasks::PersistentCaching(turbo_tasks) => turbo_tasks.task_statistics(),
         }
     }
 }
